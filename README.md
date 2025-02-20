@@ -94,5 +94,5 @@ digraph BST {
 
 ---
 
-Desenvolvido por [Seu Nome](https://www.linkedin.com/in/seu-linkedin/).
+Desenvolvido por [Pedro Thomas](www.linkedin.com/in/pedro-gustavo-thomas-5935392b7).
 
