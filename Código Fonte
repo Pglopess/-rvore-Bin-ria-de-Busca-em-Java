@@ -1,0 +1,192 @@
+import java.io.*;
+
+// Classe que representa um nó da árvore
+class No<T extends Comparable<T>> {
+    T valor;
+    No<T> esquerda;
+    No<T> direita;
+
+    No(T valor) {
+        this.valor = valor;
+    }
+}
+
+// Implementação da Árvore Binária de Busca (ABB)
+public class ArvoreBinariaBusca<T extends Comparable<T>> {
+    private No<T> raiz;
+
+    /**
+     * Insere um valor na árvore.
+     */
+    public void inserir(T valor) {
+        raiz = inserirNo(raiz, valor);
+    }
+
+    private No<T> inserirNo(No<T> raiz, T valor) {
+        if (raiz == null) {
+            return new No<>(valor);
+        }
+
+        if (valor.compareTo(raiz.valor) < 0) {
+            raiz.esquerda = inserirNo(raiz.esquerda, valor);
+        } else if (valor.compareTo(raiz.valor) > 0) {
+            raiz.direita = inserirNo(raiz.direita, valor);
+        }
+
+        return raiz;
+    }
+
+    /**
+     * Busca um valor na árvore.
+     * Retorna verdadeiro se encontrar, falso caso contrário.
+     */
+    public boolean buscar(T valor) {
+        return buscarNo(raiz, valor);
+    }
+
+    private boolean buscarNo(No<T> raiz, T valor) {
+        if (raiz == null) {
+            return false;
+        }
+
+        if (valor.equals(raiz.valor)) {
+            return true;
+        } else if (valor.compareTo(raiz.valor) < 0) {
+            return buscarNo(raiz.esquerda, valor);
+        } else {
+            return buscarNo(raiz.direita, valor);
+        }
+    }
+
+    /**
+     * Métodos para percorrer a árvore: pré-ordem, em ordem e pós-ordem.
+     */
+    public void preordem() {
+        preordem(raiz);
+        System.out.println();
+    }
+
+    private void preordem(No<T> raiz) {
+        if (raiz != null) {
+            System.out.print(raiz.valor + " ");
+            preordem(raiz.esquerda);
+            preordem(raiz.direita);
+        }
+    }
+
+    public void emOrdem() {
+        emOrdem(raiz);
+        System.out.println();
+    }
+
+    private void emOrdem(No<T> raiz) {
+        if (raiz != null) {
+            emOrdem(raiz.esquerda);
+            System.out.print(raiz.valor + " ");
+            emOrdem(raiz.direita);
+        }
+    }
+
+    public void posordem() {
+        posordem(raiz);
+        System.out.println();
+    }
+
+    private void posordem(No<T> raiz) {
+        if (raiz != null) {
+            posordem(raiz.esquerda);
+            posordem(raiz.direita);
+            System.out.print(raiz.valor + " ");
+        }
+    }
+
+    /**
+     * Remove um valor da árvore, caso exista.
+     */
+    public void remover(T valor) {
+        raiz = removerNo(raiz, valor);
+    }
+
+    private No<T> removerNo(No<T> raiz, T valor) {
+        if (raiz == null) {
+            return null; // Nó não encontrado
+        }
+
+        if (valor.compareTo(raiz.valor) < 0) {
+            raiz.esquerda = removerNo(raiz.esquerda, valor);
+        } else if (valor.compareTo(raiz.valor) > 0) {
+            raiz.direita = removerNo(raiz.direita, valor);
+        } else {
+            // Caso 1: Nó folha
+            if (raiz.esquerda == null) return raiz.direita;
+            if (raiz.direita == null) return raiz.esquerda;
+
+            // Caso 2: Nó com dois filhos - substitui pelo menor valor da subárvore direita
+            raiz.valor = menorValor(raiz.direita);
+            raiz.direita = removerNo(raiz.direita, raiz.valor);
+        }
+        return raiz;
+    }
+
+    private T menorValor(No<T> raiz) {
+        while (raiz.esquerda != null) {
+            raiz = raiz.esquerda;
+        }
+        return raiz.valor;
+    }
+
+    /**
+     * Gera um arquivo DOT para visualizar a árvore.
+     */
+    public void gerarArquivoDot(String nomeArquivo) {
+        StringBuilder conteudoDot = new StringBuilder("digraph BST {\n");
+        gerarDot(raiz, conteudoDot);
+        conteudoDot.append("}");
+
+        try (BufferedWriter escritor = new BufferedWriter(new FileWriter(nomeArquivo))) {
+            escritor.write(conteudoDot.toString());
+        } catch (IOException e) {
+            System.err.println("Erro ao gerar arquivo DOT: " + e.getMessage());
+        }
+    }
+
+    private void gerarDot(No<T> raiz, StringBuilder conteudoDot) {
+        if (raiz != null) {
+            if (raiz.esquerda != null) {
+                conteudoDot.append(raiz.valor).append(" -> ").append(raiz.esquerda.valor).append(";\n");
+            }
+            if (raiz.direita != null) {
+                conteudoDot.append(raiz.valor).append(" -> ").append(raiz.direita.valor).append(";\n");
+            }
+            gerarDot(raiz.esquerda, conteudoDot);
+            gerarDot(raiz.direita, conteudoDot);
+        }
+    }
+
+    public static void main(String[] args) {
+        ArvoreBinariaBusca<Integer> arvore = new ArvoreBinariaBusca<>();
+        int[] valores = {50, 30, 70, 20, 40, 60, 80, 25, 35, 45, 55, 75};
+
+        System.out.println("Inserindo valores na árvore:");
+        for (int valor : valores) {
+            arvore.inserir(valor);
+            System.out.print(valor + " ");
+        }
+
+        System.out.println("\n\nPercursos:");
+        System.out.print("Pré-ordem: ");
+        arvore.preordem();
+        System.out.print("Em ordem: ");
+        arvore.emOrdem();
+        System.out.print("Pós-ordem: ");
+        arvore.posordem();
+
+        System.out.println("\nRemovendo 40...");
+        arvore.remover(40);
+        System.out.print("Em ordem após remoção: ");
+        arvore.emOrdem();
+
+        arvore.gerarArquivoDot("arvore.dot");
+        System.out.println("\nArquivo DOT gerado.");
+    }
+}
